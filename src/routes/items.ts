@@ -1,8 +1,10 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { getItems, getItemById, addItem } from "../controller/items";
+import { getItems, getItemById, addItem, updateItem } from "../controller/items";
+
 // https://localhost:4000/items
 export const itemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
   if (req.url?.startsWith("/items")) {
+    
     const parts = req.url.split("/");
     const id = parts[2] ? parseInt(parts[2]) : undefined;
     if (req.method === "GET" && !id) {
@@ -50,14 +52,69 @@ export const itemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
             );
             return;
           }
-          if (!purchasedStatus || typeof purchasedStatus !== "boolean") {
+          if (purchasedStatus === undefined || typeof purchasedStatus !== "boolean") {
             res.writeHead(400, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: "Purchased Status is required" }));
+            res.end(JSON.stringify({ error: "Purchased Status is required and must be a boolean" }));
             return;
           }
           const newItem = addItem(name, quantity, purchasedStatus);
           res.writeHead(201, { "content-type": "application/json" });
           res.end(JSON.stringify(newItem));
+          return;
+        } catch (error) {
+          res.writeHead(400, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+        }
+      });
+      return;
+    }
+    if (req.method === "PUT" && id) {
+      if (isNaN(id)) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid item ID" }));
+        return;
+      }
+      let body = "";
+      req.on("data", (chunk: Buffer) => {
+        body += chunk.toString();
+      });
+      req.on("end", () => {
+        try {
+          const { name, quantity, purchasedStatus } = JSON.parse(body);
+          
+          // Validate types if provided
+          if (name !== undefined && typeof name !== "string") {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "Name must be a string" }));
+            return;
+          }
+          if (quantity !== undefined && typeof quantity !== "number") {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "Quantity must be a number" }));
+            return;
+          }
+          if (purchasedStatus !== undefined && typeof purchasedStatus !== "boolean") {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "Purchased status must be a boolean" }));
+            return;
+          }
+          
+          // Check if at least one field is provided
+          if (name === undefined && quantity === undefined && purchasedStatus === undefined) {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "At least one field (name, quantity, or purchasedStatus) must be provided" }));
+            return;
+          }
+          
+          const updatedItem = updateItem(id, name, quantity, purchasedStatus);
+          if (!updatedItem) {
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "Item not found" }));
+            return;
+          }
+          
+          res.writeHead(200, { "content-type": "application/json" });
+          res.end(JSON.stringify(updatedItem));
           return;
         } catch (error) {
           res.writeHead(400, { "content-type": "application/json" });
