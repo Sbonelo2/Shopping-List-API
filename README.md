@@ -272,3 +272,6 @@ Sbonelo2
 ## Repository
 
 [https://github.com/Sbonelo2/Shopping-List-API](https://github.com/Sbonelo2/Shopping-List-API)
+
+
+<img src="https://socialify.git.ci/Sbonelo2/Shopping-List-API/image?language=1&owner=1&name=1&stargazers=1&theme=Light" alt="Shopping-List-API" width="640" height="320" />
