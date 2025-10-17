@@ -10,6 +10,8 @@ A RESTful API built with Node.js and TypeScript for managing shopping list items
 - ✅ Update item details (name, quantity, purchased status)
 - ✅ Delete shopping items
 - ✅ Full input validation
+- ✅ Centralized error handling
+- ✅ Consistent JSON response structure
 - ✅ TypeScript for type safety
 - ✅ RESTful API design
 
@@ -46,6 +48,34 @@ npm run dev
 
 The server will start on `http://localhost:4000`
 
+## Response Structure
+
+All API responses follow a consistent JSON structure:
+
+### Success Response
+```json
+{
+  "success": true,
+  "data": { /* response data */ }
+}
+```
+
+### Success Message Response
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully"
+}
+```
+
+### Error Response
+```json
+{
+  "success": false,
+  "error": "Error message describing what went wrong"
+}
+```
+
 ## API Endpoints
 
 ### Base URL
@@ -60,14 +90,17 @@ Returns all shopping list items.
 
 **Response:**
 ```json
-[
-  {
-    "id": 0,
-    "name": "Apples",
-    "quantity": 5,
-    "purchasedStatus": false
-  }
-]
+{
+  "success": true,
+  "data": [
+    {
+      "id": 0,
+      "name": "Apples",
+      "quantity": 5,
+      "purchasedStatus": false
+    }
+  ]
+}
 ```
 
 ### 2. Get Item by ID
@@ -81,16 +114,31 @@ Returns a specific item by its ID.
 **Success Response (200):**
 ```json
 {
-  "id": 0,
-  "name": "Apples",
-  "quantity": 5,
-  "purchasedStatus": false
+  "success": true,
+  "data": {
+    "id": 0,
+    "name": "Apples",
+    "quantity": 5,
+    "purchasedStatus": false
+  }
 }
 ```
 
 **Error Responses:**
 - `400` - Invalid item ID
+```json
+{
+  "success": false,
+  "error": "Invalid item ID"
+}
+```
 - `404` - Item not found
+```json
+{
+  "success": false,
+  "error": "Item not found"
+}
+```
 
 ### 3. Create New Item
 **POST** `/items`
@@ -114,15 +162,24 @@ Creates a new shopping list item.
 **Success Response (201):**
 ```json
 {
-  "id": 0,
-  "name": "Apples",
-  "quantity": 5,
-  "purchasedStatus": false
+  "success": true,
+  "data": {
+    "id": 0,
+    "name": "Apples",
+    "quantity": 5,
+    "purchasedStatus": false
+  }
 }
 ```
 
 **Error Responses:**
 - `400` - Validation error or invalid JSON
+```json
+{
+  "success": false,
+  "error": "Name is required and must be a string"
+}
+```
 
 ### 4. Update Item
 **PUT** `/items/:id`
@@ -150,16 +207,31 @@ Updates an existing item. All fields are optional, but at least one must be prov
 **Success Response (200):**
 ```json
 {
-  "id": 0,
-  "name": "Green Apples",
-  "quantity": 10,
-  "purchasedStatus": true
+  "success": true,
+  "data": {
+    "id": 0,
+    "name": "Green Apples",
+    "quantity": 10,
+    "purchasedStatus": true
+  }
 }
 ```
 
 **Error Responses:**
 - `400` - Invalid item ID, validation error, or no fields provided
+```json
+{
+  "success": false,
+  "error": "At least one field (name, quantity, or purchasedStatus) must be provided"
+}
+```
 - `404` - Item not found
+```json
+{
+  "success": false,
+  "error": "Item not found"
+}
+```
 
 ### 5. Delete Item
 **DELETE** `/items/:id`
@@ -172,13 +244,26 @@ Deletes an existing item by its ID.
 **Success Response (200):**
 ```json
 {
+  "success": true,
   "message": "Item deleted successfully"
 }
 ```
 
 **Error Responses:**
 - `400` - Invalid item ID
+```json
+{
+  "success": false,
+  "error": "Invalid item ID"
+}
+```
 - `404` - Item not found
+```json
+{
+  "success": false,
+  "error": "Item not found"
+}
+```
 
 ## Example Usage
 
@@ -259,6 +344,8 @@ Shopping-List-API-3/
 │   │   └── items.ts          # Route handlers
 │   ├── types/
 │   │   └── items.ts          # TypeScript interfaces
+│   ├── utils/
+│   │   └── response.ts       # Response helpers & error handlers
 │   └── server.ts             # Server entry point
 ├── package.json
 ├── tsconfig.json
@@ -277,13 +364,29 @@ Currently, the API stores data in memory. Data will be lost when the server rest
 
 ## Error Handling
 
-The API returns appropriate HTTP status codes and error messages:
+The API uses centralized error handling with consistent response structures. All errors return a JSON object with `success: false` and an `error` message.
 
-- `200` - Success (GET, PUT)
+### HTTP Status Codes
+
+- `200` - Success (GET, PUT, DELETE)
 - `201` - Created (POST)
-- `400` - Bad Request (validation errors, invalid JSON)
+- `400` - Bad Request (validation errors, invalid JSON, invalid ID)
 - `404` - Not Found (item doesn't exist)
 - `405` - Method Not Allowed (unsupported HTTP method)
+
+### Common Error Types
+
+**Bad Request (400)**
+- Invalid item ID
+- Missing required fields
+- Invalid data types
+- Invalid JSON payload
+
+**Not Found (404)**
+- Item with specified ID doesn't exist
+
+**Method Not Allowed (405)**
+- Unsupported HTTP method on endpoint
 
 ## Contributing
 
