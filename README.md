@@ -8,6 +8,7 @@ A RESTful API built with Node.js and TypeScript for managing shopping list items
 - ✅ Get all shopping items
 - ✅ Get a specific item by ID
 - ✅ Update item details (name, quantity, purchased status)
+- ✅ Delete shopping items
 - ✅ Full input validation
 - ✅ TypeScript for type safety
 - ✅ RESTful API design
@@ -160,6 +161,25 @@ Updates an existing item. All fields are optional, but at least one must be prov
 - `400` - Invalid item ID, validation error, or no fields provided
 - `404` - Item not found
 
+### 5. Delete Item
+**DELETE** `/items/:id`
+
+Deletes an existing item by its ID.
+
+**Parameters:**
+- `id` (number) - Item ID
+
+**Success Response (200):**
+```json
+{
+  "message": "Item deleted successfully"
+}
+```
+
+**Error Responses:**
+- `400` - Invalid item ID
+- `404` - Item not found
+
 ## Example Usage
 
 ### Using cURL
@@ -188,6 +208,11 @@ curl -X PUT http://localhost:4000/items/0 \
   -d '{"quantity":5,"purchasedStatus":true}'
 ```
 
+**Delete an item:**
+```bash
+curl -X DELETE http://localhost:4000/items/0
+```
+
 ### Using JavaScript Fetch
 
 ```javascript
@@ -211,6 +236,13 @@ fetch('http://localhost:4000/items/0', {
   body: JSON.stringify({
     purchasedStatus: true
   })
+})
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+// Delete an item
+fetch('http://localhost:4000/items/0', {
+  method: 'DELETE'
 })
   .then(res => res.json())
   .then(data => console.log(data));
